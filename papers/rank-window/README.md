@@ -2,8 +2,8 @@
 
 **Chase Hendrick**, Independent Researcher · [ORCID 0009-0002-9754-6087](https://orcid.org/0009-0002-9754-6087)
 
-**Draft methods note** (drafted in this repository by the owner's standing decision of 2026-09-26), **not reviewed
-outside this project** and not submitted anywhere. Two independent referee readings were made in the project
+**Draft methods note** (drafted in this repository by the owner's standing decision of 2026-09-26), not submitted
+anywhere. Two independent referee readings were made in the project
 (`notes/review-1.md`, verdict major revision; `notes/review-2.md`, verdict minor revision), and the fixes of both are
 applied; the fixes of the second have not been read again.
 

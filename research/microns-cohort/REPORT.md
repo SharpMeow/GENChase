@@ -1,7 +1,7 @@
 # Does the MICrONS "cohort" wiring rule survive conditioning on what each axon can reach, and does it replicate on new axons?
 
 Research record of 2026-09-26, drafted in this repository by the owner's standing decision of that day. **Exploratory,
-one animal, not reviewed outside this project.** An independent in-project checker reviewed the point estimates; the
+one animal.** An independent in-project checker reviewed the point estimates; the
 calibration and held-out work that followed its report has not been independently checked.
 
 ## Result
