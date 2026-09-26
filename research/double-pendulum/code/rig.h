@@ -51,11 +51,14 @@ static IVector imageC0(Ctx& c, const IVector& zc, int nret, int shift) {
 }
 // Enclosure of D f~^n (derivative w.r.t. z) over the set Z = zc + A r, r in box rr (rr centred at 0).
 static IMatrix derivC1(Ctx& c, const IVector& zc, const IMatrix& A, const IVector& rr, int nret, I* rt = 0) {
-  IVector Z = zc + A * rr;
+  // The mean-value form f(z) = f(zc) + Df(xi)(z - zc) needs Df over the segment from zc to z, so the set must
+  // contain zc itself: widen the offsets to contain 0 (zc is a rounded point, the piece may not contain it).
+  IVector rr0(rr); for (int q = 0; q < rr0.dimension(); ++q) rr0[q] = intervalHull(rr0[q], I(0));
+  IVector Z = zc + A * rr0;
   I a, b; lift_dp1<I>(c.coupled, c.E, c.g, Z[0], Z[1], a, b);
   I am = I(a.mid().leftBound()), bm = I(b.mid().leftBound());
   IVector x(4); x[0] = 0; x[1] = zc[0]; x[3] = zc[1]; x[2] = lift_p1<I>(c.coupled, c.E, c.g, zc[0], zc[1]);
-  IVector ar = A * rr;
+  IVector ar = A * rr0;
   I rem = (a - am) * ar[0] + (b - bm) * ar[1];          // mean-value remainder of the lift
   IMatrix C(4, 4); C[0][0] = 1; C[2][2] = 1;
   // column 1: lift direction of local x, column 3: of local y
@@ -63,7 +66,7 @@ static IMatrix derivC1(Ctx& c, const IVector& zc, const IMatrix& A, const IVecto
     int col = j == 0 ? 1 : 3;
     C[1][col] = A[0][j]; C[3][col] = A[1][j]; C[2][col] = am * A[0][j] + bm * A[1][j];
   }
-  IVector r0(4); r0[0] = 0; r0[1] = rr[0]; r0[2] = rem; r0[3] = rr[1];
+  IVector r0(4); r0[0] = 0; r0[1] = rr0[0]; r0[2] = rem; r0[3] = rr0[1];
   C1Rect2Set s(x, C, r0);
   IMatrix mon(4, 4); I t;
   IVector y = (*c.pm)(s, mon, t, nret);

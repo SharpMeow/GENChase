@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   I E = Q("E"), g = I(1);
   std::vector<Ctx*> ctx; for (int i = 0; i < nth; ++i) ctx.push_back(new Ctx(true, E, g, 20));
   printf("classical double pendulum, E = %s; %zu h-sets, %zu covering relations to check (pieces per edge %d)\n", S(E).c_str(), sets.size(), trans.size(), npc);
-  double Tmax = 0; int bad = 0;
+  double Tmax = 0; int bad = 0; std::vector<std::pair<int, int>> verified;
   for (auto& t : trans) {
     if (only && t[0] != only) continue;
     const HSet& X = sets[idx(t[0])]; const HSet& Y = sets[idx(t[1])]; int sh = atoi(t[2].c_str());
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     Tmax = std::max(Tmax, tmax);
     printf("  %-4s => %-4s (shift %2d): edges %s, midline max|y| %.3f, pieces %ld, unresolved %d: %s\n", X.name.c_str(), Y.name.c_str(), sh,
            edges ? (leNeg ? "left->left, right->right" : "left->right, right->left") : "NOT separated", ymid, npieces, fails, okT ? "covers" : "FAIL");
-    if (!okT) ++bad;
+    if (!okT) ++bad; else verified.push_back({idx(t[0]), idx(t[1])});
   }
   // pairwise disjointness on the cylinder (shift the centre of X by a multiple of 2 pi towards Y)
   int nd = 0;
@@ -113,18 +113,30 @@ int main(int argc, char** argv) {
     if (!disj) { printf("  NOT DISJOINT: %s %s\n", X.name.c_str(), Y.name.c_str()); ++nd; }
   }
   printf("pairwise disjointness of the %zu h-sets on the cylinder: %s\n", sets.size(), nd ? "FAIL" : "yes");
-  // spectral radius of the transition graph: loops through N of lengths 1 and L+2 = number of M sets + 1
-  int nM = (int)sets.size() - 1, len = nM + 1;
-  // largest root r of r^len = r^(len-1) + 1; certify r > r_lo by F(r_lo) < 0 in interval arithmetic
-  double r = 1.5; for (int it = 0; it < 200; ++it) { double f = pow(r, len) - pow(r, len - 1) - 1, df = len * pow(r, len - 1) - (len - 1) * pow(r, len - 2); r -= f / df; }
-  double rlo = r * (1 - 1e-12);
-  I F = power(I(rlo), len) - power(I(rlo), len - 1) - 1;
-  bool rok = F.rightBound() < 0;
-  I h = log(I(rlo));
-  printf("transition graph: loop N->N (length 1) and N->M0->...->M%d->N (length %d); largest root of r^%d = r^%d + 1 exceeds %.12f: %s\n",
-         nM - 1, len, len, len - 1, rlo, rok ? "yes" : "NO");
+  // The transition graph is built from the relations verified above (not assumed). Its 0-1 adjacency matrix A
+  // defines the vertex shift Sigma_A, whose entropy is log rho(A). Lower bound for rho(A): for a positive vector v,
+  // rho(A) >= min_i (A v)_i / v_i (Collatz-Wielandt, A nonnegative); v is a numerical Perron vector, the ratio
+  // is evaluated in interval arithmetic.
+  int n = (int)sets.size();
+  std::vector<std::vector<int>> Adj(n, std::vector<int>(n, 0));
+  for (auto& e : verified) Adj[e.first][e.second] = 1;
+  std::vector<double> v(n, 1.0);
+  for (int it = 0; it < 20000; ++it) {
+    std::vector<double> w(n, 0.0); double nm = 0;
+    for (int a = 0; a < n; ++a) for (int b2 = 0; b2 < n; ++b2) w[a] += Adj[a][b2] * v[b2];
+    for (int a = 0; a < n; ++a) { w[a] = 0.5 * (w[a] + v[a]); nm = std::max(nm, w[a]); }   // damped iteration (period issues)
+    for (int a = 0; a < n; ++a) v[a] = w[a] / nm;
+  }
+  bool pos = true; for (double x : v) pos = pos && x > 0;
+  I rlo = I(1e300);
+  for (int a = 0; a < n && pos; ++a) { I Av = 0; for (int b2 = 0; b2 < n; ++b2) if (Adj[a][b2]) Av += I(v[b2]); rlo = min(rlo, Av / I(v[a])); }
+  bool rok = pos && rlo.leftBound() > 1 && !only;
+  I h = log(I((pos && rlo.leftBound() > 1) ? rlo.leftBound() : 1.0));   // log 1 = 0: no claim
+  printf("transition graph from the %zu verified relations: min_i (A v)_i / v_i >= %.12f for a positive v, so the spectral radius exceeds it: %s\n",
+         verified.size(), rlo.leftBound(), rok ? "yes" : "NO");
   printf("  h_top(P) >= log r > %.9f per return; return time <= %.9f, so h_top(flow) >= %.9f per unit time\n",
          h.leftBound(), Tmax, (h / I(Tmax)).leftBound());
+  if (only) printf("ONLY is set: partial run, no entropy claim\n");
   if (bad || nd || !rok) { printf("RESULT: FAIL\n"); return 1; }
   printf("RESULT: ALL COVERING RELATIONS VERIFIED\n");
   return 0;

@@ -368,6 +368,19 @@ code are in [check/](check/) (`VERDICT.md`, Python/Arb programs `common.py`, `dp
   interval arithmetic (worst case over the enclosure of p), and the last piece of the segment cover ends exactly
   at x2. The three proofs and three controls were rerun after these changes with the same outcomes.
 
+A second independent agent checked Theorem 2 and the horseshoe code ([check/VERDICT-horseshoe.md](check/VERDICT-horseshoe.md)).
+Verdict: **confirmed with caveats**. It reran the check with 16 and with 32 pieces per edge (all 24 relations
+pass; largest midline value 0.492 at 32 pieces), recomputed r = 1.10695024501688 independently, confirmed the
+code against Zgliczynski-Gidea Theorem 16 and the mathematics of Section 4.4a, caught mutations (a shrunk
+alpha, an enlarged beta, a moved centre, a wrong shift, E = 1e-3, displaced targets), and spot-checked M9 => M10
+and M21 => N with its own integrator (edge images at x = -2.99991 and +3.00009, return time 7.355385).
+Two defects it found were fixed and everything was rerun (same numbers): the transition graph was assumed from
+the number of sets instead of built from the verified relations (a dropped relation still printed the bound;
+now the graph is built from the verified relations and its spectral radius bounded below by the Collatz-Wielandt
+ratio min (Av)_i / v_i in interval arithmetic, and the dropped-relation mutation fails); and the derivative
+enclosure in the mean-value form did not always contain the rounded piece centre (a gap of about 1e-15 in phase
+space; `derivC1` in `code/rig.h` now widens the offsets to contain 0, which also applies to `prove.cpp`).
+
 ## 9. Limitations
 
 - The proof trusts CAPD's rigorous integrator and Poincare map and the C++ compiler and floating-point rounding
