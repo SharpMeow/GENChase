@@ -50,7 +50,14 @@ Releases are made through the "Publish offline studio" workflow ([docs/PUBLISHIN
   tilings), `research/double-pendulum/` (a computer-assisted proof of a transversal homoclinic orbit in the equal double
   pendulum) and the point-vortex studies `research/seven-vortex-sphere/`, `research/eight-vortex-crystals/`,
   `research/five-vortex-equilibria/` and `research/four-vortex-stability/`: each is drafted here with its programs and
-  results, labelled as not independently reviewed until it has been.
+  results, labelled as not independently reviewed until it has been. By the owner's decision of the same day, which
+  stands for later work so that an agent does not ask again: a result produced in this project's sessions (a proof, a
+  computation, a data analysis, or a note or manuscript about one) may be drafted in this repository with its programs
+  and results, a manuscript in `papers/<id>/` (listed in `papers/papers.json` with status "draft" and its own
+  `notes/QUALITY.md`) and anything else in `research/<id>/`, labelled as not independently reviewed until it has been.
+  This does not cover a commitment's private record (`*.commitment.json`), copyrighted texts such as the papers a
+  study read, or raw data whose terms do not allow redistribution: commit the programs, the derived numbers and a
+  statement of where the data come from.
 
 ## Verify before you commit
 
