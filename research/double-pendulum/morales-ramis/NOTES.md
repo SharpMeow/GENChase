@@ -19,7 +19,7 @@ where the mass matrix degenerates (cos^2(a1 - a2) = 2). The velocities blow up l
 logarithm, and the three-turn transport is the identity near x0 [numerical]. So the three-fold loop has
 monodromy exactly I. Our high-precision value is max|M - I| = 3e-38 [numerical]. A validated enclosure
 (Section 5) proves that the fundamental matrix at the end of each of his three-fold loops is within
-EPS_RIG of I [rigorous], while his printed entries are of size 20 to 30. His printed matrices also fail two
+4e-9 of I, entrywise [rigorous], while his printed entries are of size 20 to 30. His printed matrices also fail two
 necessary conditions for any monodromy along a loop that is closed on the phase curve: they do not fix the
 orbit tangent f(x0) and they do not preserve dE(x0), by margins of 10 and 15 against rounding errors of order
 0.01 [rigorous, for the reading g = 1 with velocities]. They fail the same conditions in all 96 other readings we
@@ -64,8 +64,8 @@ loops close after three turns, so everything below uses g = 1 and velocities, th
 ### 3.2 The singular point and its local nature [numerical]
 
 - **Location.** A Domb-Sykes fit of the Taylor coefficients ([locate.py](locate.py)) gives a singularity near
-  0.7108 + 0.6465i. It is inside the diamond, 0.025 from its lower-right edge, and it is not at 0.5 + 0.9i. The
-  singularity nearest to t = 0 is at distance 1.045, which is this one. By the reality of the solution, its mirror
+  0.7108 + 0.6465i. It is inside the diamond, 0.025 from its lower-right edge, and it is not at 0.5 + 0.9i. Its
+  distance from t = 0 is 0.961. The survey of Section 3.5 found no singularity closer to 0. By the reality of the solution, its mirror
   image 0.7108 - 0.6465i lies inside gamma2.
 - **Local expansion.** [puiseux.py](puiseux.py) samples x on circles |t - t*| = rho over three turns, takes the
   FFT in the angle, and refines t* by removing the (t - t*)^(-4/3) term that a wrong centre produces. The result is
@@ -165,7 +165,13 @@ another type. We did not resolve them. None of the loops we found gives a non-tr
 the three-fold diamond paths of Section 2 with exact decimal vertices. The analytic continuation of the solution
 and of its fundamental matrix exists along the whole path. The fundamental matrix at the end satisfies:
 
-RIGTABLE
+| path | max_ij \|Xi_end - I\|_ij | \|x_end - x0\| (enclosure contains 0, radius) | steps |
+|---|---|---|---|
+| gamma1^3 | <= 3.47e-9 | <= 4.6e-13 per real or imaginary part | 7323 |
+| gamma2^3 | <= 3.99e-9 | <= 5.5e-13 per real or imaginary part | 7323 |
+
+(outputs [rig_gamma1.out](rig_gamma1.out), [rig_gamma2.out](rig_gamma2.out), [rig_gamma1.json](rig_gamma1.json),
+[rig_gamma2.json](rig_gamma2.json); the certified distance from Salnikov's (1,1) entry is >= 26.11 in both cases.)
 
 This contradicts Salnikov's printed M1 and M2, whose (1,1) entries are 20.72 - 17.12i and -18.72 - 17.12i, for
 this reading of his setting. The contradiction does not depend on whether the loop closes. It shows that the
@@ -187,11 +193,13 @@ The state is carried in mean-value form, x in xh + disk(s). The step Jacobian J 
 x_new lies in phi(xh) + J s, and Xi_new = J Xi. Errors are kept as disk radii (absolute values rounded up), not as
 complex rectangles. A first version that pushed balls through the Taylor recursion lost all accuracy near the
 branch point, and so did a version that kept complex rectangles, which grow by up to sqrt 2 per complex product.
-Both were removed. The parameters were N = 40, q = 0.2 and 256 bits. The step count was STEPS, and the largest
-Cauchy tail was about 1e-27 per step. The runtime was about RUNTIME per loop on one core.
+Both were removed. The parameters were N = 40, q = 0.2 and 256 bits. The step count was 7323 per loop, and the largest
+Cauchy tail was 1.6e-29 per step. The runtime was about 51 minutes per loop on one core. (The two runs were made before the unused
+first and second variants were deleted from `rigorous.py`. The class `RigDisk` and everything it calls are
+unchanged.)
 
 **What is not proved.**
-- That the loop is closed on Gamma. The enclosure of x_end - x0 contains 0 and has radius XRAD, but an enclosure
+- That the loop is closed on Gamma. The enclosure of x_end - x0 contains 0 and has radius at most 5.5e-13, but an enclosure
   cannot prove equality. It does not matter here, because the monodromy is trivial anyway. A proof would go
   through the local structure at t*: a validated Puiseux expansion in (t - t*)^(1/3) with a proved remainder, or a
   regularising change of time in which the branch point becomes a regular point.
@@ -239,6 +247,7 @@ scipy. Times are for one core.
 | `python3 consistency.py` | necessary conditions, 96 readings [numerical] | 20 s |
 | `python3 consistency_rig.py` | the same, certified, reading g = 1 with velocities [rigorous] | 1 s |
 | `python3 fast_variants.py` | closure for g in {1, 9.8, 9.81, 10}, velocities or momenta | 2 min |
+| `python3 loops_from_eps.py loops.eps` | the path of Salnikov's figure (needs the arXiv source) | 1 s |
 | `python3 locate.py` | Domb-Sykes location of the branch point | 30 s |
 | `python3 puiseux.py` | Puiseux coefficients at t* at two radii | 1 min |
 | `python3 fdcheck.py` | three-turn map is the identity near x0 | 20 s |
@@ -246,8 +255,8 @@ scipy. Times are for one core.
 | `python3 reproduce.py 50 0.2 mom` | the same, momenta reading | 4 min |
 | `python3 survey.py 1.0` | singularity survey in the upper half plane | 10 min |
 | `python3 probe.py` | the non-closing singularities near Im t = 2 | 1 min |
-| `python3 rig_run.py gamma1 40 0.2 3 256` | validated enclosure along gamma1^3 (writes rig_gamma1.json) | RUNTIME |
-| `python3 rig_run.py gamma2 40 0.2 3 256` | the same for gamma2^3 | RUNTIME |
+| `python3 rig_run.py gamma1 40 0.2 3 256` | validated enclosure along gamma1^3 (writes rig_gamma1.json) | 51 min |
+| `python3 rig_run.py gamma2 40 0.2 3 256` | the same for gamma2^3 | 51 min |
 
 Library modules: `field.py` (equations), `taylor.py` (Arb power-series Taylor integrator, numerical),
 `fast.py` (double-precision explorer), `rigorous.py` (validated integrator). The `.out` and `.json` files are

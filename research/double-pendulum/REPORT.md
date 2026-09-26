@@ -382,8 +382,7 @@ code are in [check/](check/) (`VERDICT.md`, Python/Arb programs `common.py`, `dp
 - Corollary 3 uses an unquantified persistence argument. Its novelty rests on our reading of Bolotin-Negrini's Theorem 10.1 from OCR snippets (Section 2); the printed page was not seen.
 - The explicit entropy bound (Theorem 2) is proved at E = 0 only, and it is a lower bound from one loop, far below
   the entropy one would estimate numerically.
-- Meromorphic non-integrability (Morales-Ramis; Salnikov's monodromy computation made rigorous) was not
-  attempted.
+- Meromorphic non-integrability (Morales-Ramis) is not proved; Section 11 records the attempt.
 - Only three energies are proved; nothing is claimed for other E, although the orbit family and the crossing
   were followed numerically between them.
 
@@ -398,3 +397,30 @@ must" for the four controls; logs go to `data/`. The h-set design is regenerated
         0.95568530469114776 0.29439021450684805 -1.8870e-5 -1.8838e-5 9 3 1e-5 2.5e-7 3 1e-8 > configs/horseshoe_E0.cfg
 
 Single runs: `_bin/prove configs/E0.cfg <threads>`. Requirements: g++, cmake, python3 with sympy.
+
+## 11. Meromorphic non-integrability (Morales-Ramis): attempted, not proved
+
+Details, code and every run are in [morales-ramis/NOTES.md](morales-ramis/NOTES.md). We tried to redo Salnikov's
+computation (arXiv:1303.4904) with validated complex-time integration.
+
+- His loops. The note does not state g; the loops, read from the figure in the arXiv source, are diamonds around
+  0.5 +- 0.9i based at t = 0, each taken three times. They close on the phase curve after three turns only at
+  g = 1 (not at 9.8, 9.81 or 10). The singular point they enclose is at t* = 0.71083085844270 + 0.64647678336182i
+  (numerical), where the mass matrix degenerates (cos^2(t1 - t2) = 2), and a Puiseux fit shows an algebraic branch
+  point of order 3 with velocities like (t - t*)^(-1/3) (numerical).
+- Result (numerical, order-60 Taylor, 256 bits): along both three-fold loops the monodromy of the variational
+  equation is the identity, max|M - I| = 3e-38 and 4e-38; rerun by us with the same result. Trivial monodromy
+  cannot prove non-integrability.
+- Rigorous (ball arithmetic, validated complex-time integrator with a Cauchy remainder, about 51 minutes per loop):
+  along both loops the endpoint matrix of the variational equation lies within 4e-9 of I entrywise. Not proved:
+  that the loops close exactly (so this is not yet a monodromy statement), and where the singular point is.
+- Salnikov's printed matrices are unipotent (I plus a rank-one nilpotent part of size about 72); in ball
+  arithmetic, every matrix rounding to his numbers moves the orbit tangent by at least 10.26 and fails to preserve
+  the energy gradient by at least 15.31, which a monodromy along a loop closed on the phase curve must do; 96
+  other readings of his variables also fail (numerical). We could not reproduce his result. Even if genuine,
+  unipotent matrices are resonant, so Ziglin's theorem would not apply; Morales-Ramis would, but it would need
+  exact closure, proved unipotence and a certified non-zero commutator.
+- The gap. A proof needs a loop closed on the phase curve with non-trivial monodromy. The order-3 branch points
+  found give none. Our rigorous periodic orbit gives one certified non-resonant element (trace -3.8087, real
+  period); a second, non-commuting element would have to come from a singularity of another type (five
+  singular points near Im t = 2 did not close within 8 turns and were not resolved). Open.
